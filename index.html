@@ -92,7 +92,7 @@
             color: #ccc;
         }
 
-        input {
+        input, textarea {
             width: 100%;
             padding: 12px;
             background-color: #1e1e1e;
@@ -104,7 +104,12 @@
             outline: none;
         }
 
-        input:focus {
+        textarea {
+            resize: none;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
             border-color: #ff3333;
         }
 
@@ -209,34 +214,41 @@
     <div class="container" id="menu-vendas">
         <h1>ZYKLON VENDAS - FF</h1>
 
-        <!-- Lista de Produtos -->
-        <div class="card" onclick="selecionarProduto(this, 'Passe Booyah', '6.00')">
+        <!-- Lista de Produtos Atualizada -->
+        <div class="card" onclick="selecionarProduto(this, 'Passe Booyah', '5.99')">
             <div class="info">
                 <h3>Passe Booyah</h3>
-                <p>R$ 6,00</p>
+                <p>R$ 5,99</p>
             </div>
             <button class="btn-select" type="button">Selecionar</button>
         </div>
 
-        <div class="card" onclick="selecionarProduto(this, '1040 Dimas (Via Token)', '33.00')">
+        <div class="card" onclick="selecionarProduto(this, '220 Likes', '1.50')">
             <div class="info">
-                <h3>1040 Dimas (Via Token)</h3>
-                <p>R$ 33,00</p>
+                <h3>220 Likes</h3>
+                <p>R$ 1,50</p>
             </div>
             <button class="btn-select" type="button">Selecionar</button>
         </div>
 
-        <div class="card" onclick="selecionarProduto(this, 'Punho Infinito', '125.00')">
+        <div class="card" onclick="selecionarProduto(this, 'Bio Longa', '7.00')">
             <div class="info">
-                <h3>Punho Infinito</h3>
-                <p>R$ 125,00</p>
+                <h3>Bio Longa</h3>
+                <p>R$ 7,00</p>
             </div>
             <button class="btn-select" type="button">Selecionar</button>
         </div>
 
-        <!-- Entrada de Dados -->
+        <!-- Entrada de Dados Fixa -->
         <label for="id-game">ID do Free Fire:</label>
         <input type="number" id="id-game" placeholder="Digite o ID do jogo..." />
+
+        <!-- Campo Dinâmico da Bio (Aparece apenas quando 'Bio Longa' for selecionado) -->
+        <div id="campo-bio" class="hidden">
+            <label for="bio-text">Texto para a sua Bio (Máx 256 caracteres):</label>
+            <textarea id="bio-text" maxlength="256" placeholder="Digite a frase para a sua Bio aqui..." rows="4"></textarea>
+            <div id="contador" style="text-align: right; font-size: 0.8rem; color: #888; margin-top: 4px;">0 / 256</div>
+        </div>
 
         <button class="btn-primary" onclick="avancarPagamento()">Confirmar Pedido</button>
     </div>
@@ -270,17 +282,32 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Sua Chave Pix Randomizada Configurada:
+        // Sua Chave Pix:
         const SUA_CHAVE_PIX = "A41454bf-4345-4f9c-9ea8-abe216fae1f2"; 
 
         let produtoSelecionado = null;
         let valorSelecionado = null;
+
+        // Monitora quantidade de caracteres digitados na bio
+        document.getElementById('bio-text').addEventListener('input', function() {
+            document.getElementById('contador').innerText = `${this.value.length} / 256`;
+        });
 
         function selecionarProduto(elemento, nome, valor) {
             document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
             elemento.classList.add('selected');
             produtoSelecionado = nome;
             valorSelecionado = valor;
+
+            // Gerencia se mostra o campo de bio ou esconde
+            const campoBio = document.getElementById('campo-bio');
+            if (nome === 'Bio Longa') {
+                campoBio.classList.remove('hidden');
+            } else {
+                campoBio.classList.add('hidden');
+                document.getElementById('bio-text').value = ''; // limpa se trocar de produto
+                document.getElementById('contador').innerText = '0 / 256';
+            }
         }
 
         function avancarPagamento() {
@@ -293,6 +320,15 @@
             if (!idJogador) {
                 alert("Por favor, digite o seu ID do Free Fire!");
                 return;
+            }
+
+            // Validação extra caso seja Bio Longa
+            if (produtoSelecionado === 'Bio Longa') {
+                const bioTexto = document.getElementById('bio-text').value.trim();
+                if (!bioTexto) {
+                    alert("Por favor, digite o texto da sua Bio Longa!");
+                    return;
+                }
             }
 
             // Exibe a chave na interface
@@ -318,6 +354,7 @@
 
         function finalizarPedido() {
             const idJogador = document.getElementById('id-game').value.trim();
+            const bioTexto = document.getElementById('bio-text').value.trim();
             
             const dadosPedido = {
                 produto: produtoSelecionado,
@@ -325,9 +362,14 @@
                 id_jogador: idJogador
             };
 
+            // Se for Bio Longa, anexa o texto personalizado no objeto enviado pro bot
+            if (produtoSelecionado === 'Bio Longa') {
+                dadosPedido.texto_bio = bioTexto;
+            }
+
             tg.sendData(JSON.stringify(dadosPedido));
             tg.close();
         }
     </script>
 </body>
-    </html>
+</html>
