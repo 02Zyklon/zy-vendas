@@ -1,176 +1,333 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zyklon Vendas</title>
-    <!-- SDK Oficial do Telegram Mini Apps -->
+    <title>Zyklon Vendas - FF</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Estilização Brutalista / Dark se adaptando ao tema do Telegram */
+        /* Estética Brutalista Industrial / Dark */
         body {
-            font-family: sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 15px;
-            background-color: var(--tg-theme-bg-color, #1a1a1a);
-            color: var(--tg-theme-text-color, #ffffff);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        h2 {
-            text-align: center;
+
+        h1 {
             color: #ff3333;
             text-transform: uppercase;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            text-align: center;
             border-bottom: 2px solid #ff3333;
             padding-bottom: 8px;
+            width: 100%;
         }
-        .produto-card {
-            background-color: var(--tg-theme-secondary-bg-color, #2d2d2d);
-            padding: 12px;
-            margin-bottom: 10px;
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Lista de Produtos */
+        .card {
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-left: 4px solid #ff3333;
             border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #ff3333;
+            transition: 0.2s;
+            cursor: pointer;
         }
-        .produto-info h3 {
+
+        .card.selected {
+            border-color: #ff3333;
+            background-color: #1a0a0a;
+        }
+
+        .info h3 {
             margin: 0 0 5px 0;
-            font-size: 16px;
+            font-size: 1.05rem;
         }
-        .produto-info p {
+
+        .info p {
             margin: 0;
             color: #ff3333;
             font-weight: bold;
+            font-size: 1rem;
         }
-        .btn-selecionar {
+
+        .btn-select {
             background-color: #ff3333;
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 4px;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-transform: uppercase;
         }
-        .btn-selecionar.ativo {
-            background-color: #33cc33;
+
+        .card.selected .btn-select {
+            background-color: #444;
         }
-        .campo-id {
+
+        /* Formulário */
+        label {
+            display: block;
+            margin: 15px 0 6px 0;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #ff3333;
+        }
+
+        .btn-primary {
+            background-color: #2ea1f2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
             margin-top: 20px;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        /* Tela de Pagamento */
+        .hidden {
+            display: none !important;
+        }
+
+        .payment-screen {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            align-items: center;
+            background-color: #0d0d0d;
+            border: 2px dashed #ff3333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 10px;
+            text-align: center;
         }
-        .campo-id input {
-            padding: 12px;
-            border-radius: 4px;
-            border: 1px solid #444;
-            background-color: #222;
-            color: white;
-            font-size: 16px;
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn-pago {
+
+        .qr-code img {
             width: 100%;
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            height: 100%;
+        }
+
+        .pix-key-container {
+            display: flex;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .pix-key {
+            background-color: #1c1c1c;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            flex-grow: 1;
+            border-radius: 4px 0 0 4px;
+            overflow-x: auto;
+            white-space: nowrap;
+            color: #00ff66;
+        }
+
+        .btn-copy {
+            background-color: #00ff66;
+            color: black;
             border: none;
-            padding: 15px;
-            font-size: 16px;
+            padding: 10px 15px;
             font-weight: bold;
-            border-radius: 6px;
-            margin-top: 20px;
             cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .btn-back {
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Zyklon Vendas - FF</h2>
-    
-    <!-- Lista de Itens -->
-    <div id="vitrine">
-        <div class="produto-card">
-            <div class="produto-info">
+    <div class="container" id="menu-vendas">
+        <h1>ZYKLON VENDAS - FF</h1>
+
+        <!-- Lista de Produtos -->
+        <div class="card" onclick="selecionarProduto(this, 'Passe Booyah', '6.00')">
+            <div class="info">
                 <h3>Passe Booyah</h3>
                 <p>R$ 6,00</p>
             </div>
-            <button class="btn-selecionar" onclick="selecionarProduto(this, 'Passe Booyah', 6.00)">Selecionar</button>
+            <button class="btn-select" type="button">Selecionar</button>
         </div>
 
-        <div class="produto-card">
-            <div class="produto-info">
+        <div class="card" onclick="selecionarProduto(this, '1040 Dimas (Via Token)', '33.00')">
+            <div class="info">
                 <h3>1040 Dimas (Via Token)</h3>
                 <p>R$ 33,00</p>
             </div>
-            <button class="btn-selecionar" onclick="selecionarProduto(this, '1040 Dimas', 33.00)">Selecionar</button>
+            <button class="btn-select" type="button">Selecionar</button>
         </div>
-        
-        <div class="produto-card">
-            <div class="produto-info">
+
+        <div class="card" onclick="selecionarProduto(this, 'Punho Infinito', '125.00')">
+            <div class="info">
                 <h3>Punho Infinito</h3>
                 <p>R$ 125,00</p>
             </div>
-            <button class="btn-selecionar" onclick="selecionarProduto(this, 'Punho Infinito', 125.00)">Selecionar</button>
+            <button class="btn-select" type="button">Selecionar</button>
         </div>
+
+        <!-- Entrada de Dados -->
+        <label for="id-game">ID do Free Fire:</label>
+        <input type="number" id="id-game" placeholder="Digite o ID do jogo..." />
+
+        <button class="btn-primary" onclick="avancarPagamento()">Confirmar Pedido</button>
     </div>
 
-    <!-- Campo de ID do Player -->
-    <div class="campo-id">
-        <label for="player-id">ID do Free Fire:</label>
-        <input type="number" id="player-id" placeholder="Digite o ID do jogo...">
-    </div>
-
-    <!-- Botão de Ação Principal -->
-    <button class="btn-pago" onclick="enviarPedido()">Confirmar Pedido</button>
-</div>
-
-<script>
-    // Inicializa o SDK do Telegram
-    const tg = window.Telegram.WebApp;
-    tg.expand(); // Abre o Mini App em tela cheia automaticamente
-
-    let produtoSelecionado = null;
-
-    function selecionarProduto(botao, nome, preco) {
-        // Reseta os outros botões
-        document.querySelectorAll('.btn-selecionar').forEach(btn => {
-            btn.classList.remove('ativo');
-            btn.innerText = 'Selecionar';
-        });
-
-        // Ativa o botão clicado
-        botao.classList.add('ativo');
-        botao.innerText = 'Selecionado ✓';
+    <!-- TELA DE PAGAMENTO -->
+    <div class="container hidden" id="menu-pagamento">
+        <h1>PAGAMENTO PIX</h1>
         
-        produtoSelecionado = { nome, preco };
-    }
+        <div class="payment-screen">
+            <p style="margin: 0; font-size: 1.1rem; font-weight: bold;">Escaneie o QR Code abaixo:</p>
+            
+            <div class="qr-code">
+                <img id="img-qrcode" src="" alt="QR Code Pix">
+            </div>
 
-    function enviarPedido() {
-        const idPlayer = document.getElementById('player-id').value;
+            <p style="margin: 10px 0 5px 0; font-size: 0.9rem; color: #aaa;">Ou pague pela Chave Pix:</p>
+            
+            <div class="pix-key-container">
+                <div class="pix-key" id="chave-pix-texto">carregando...</div>
+                <button class="btn-copy" onclick="copiarChave()">Copiar</button>
+            </div>
+            
+            <p style="font-size: 0.8rem; color: #ff3333; margin: 8px 0 0 0;">⚠️ Após pagar, envie o comprovante no chat!</p>
+        </div>
 
-        if (!produtoSelecionado) {
-            alert("Por favor, selecione um produto!");
-            return;
+        <button class="btn-primary" style="background-color: #00ff66; color: black;" onclick="finalizarPedido()">Já realizei o pagamento</button>
+        <button class="btn-back" onclick="voltarMenu()">⬅ Voltar e Alterar</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Sua Chave Pix Randomizada Configurada:
+        const SUA_CHAVE_PIX = "A41454bf-4345-4f9c-9ea8-abe216fae1f2"; 
+
+        let produtoSelecionado = null;
+        let valorSelecionado = null;
+
+        function selecionarProduto(elemento, nome, valor) {
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('selected'));
+            elemento.classList.add('selected');
+            produtoSelecionado = nome;
+            valorSelecionado = valor;
         }
-        if (!idPlayer) {
-            alert("Por favor, digite o seu ID do Free Fire!");
-            return;
+
+        function avancarPagamento() {
+            const idJogador = document.getElementById('id-game').value.trim();
+
+            if (!produtoSelecionado) {
+                alert("Por favor, selecione um produto antes de continuar!");
+                return;
+            }
+            if (!idJogador) {
+                alert("Por favor, digite o seu ID do Free Fire!");
+                return;
+            }
+
+            // Exibe a chave na interface
+            document.getElementById('chave-pix-texto').innerText = SUA_CHAVE_PIX;
+
+            // Gera o QR Code incluindo a chave e o valor correspondente
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(SUA_CHAVE_PIX + " | Valor: R$ " + valorSelecionado)}`;
+            document.getElementById('img-qrcode').src = qrUrl;
+
+            document.getElementById('menu-vendas').classList.add('hidden');
+            document.getElementById('menu-pagamento').classList.remove('hidden');
         }
 
-        // Monta os dados do pedido
-        const dadosPedido = {
-            item: produtoSelecionado.nome,
-            valor: produtoSelecionado.preco,
-            id: idPlayer
-        };
+        function copiarChave() {
+            navigator.clipboard.writeText(SUA_CHAVE_PIX);
+            alert("Chave Pix copiada com sucesso! Pronta para colar no app do seu banco.");
+        }
 
-        // Envia os dados de volta para o chat do bot no Telegram
-        tg.sendData(JSON.stringify(dadosPedido));
-        tg.close(); // Fecha o Mini App após enviar
-    }
-</script>
+        function voltarMenu() {
+            document.getElementById('menu-pagamento').classList.add('hidden');
+            document.getElementById('menu-vendas').classList.remove('hidden');
+        }
+
+        function finalizarPedido() {
+            const idJogador = document.getElementById('id-game').value.trim();
+            
+            const dadosPedido = {
+                produto: produtoSelecionado,
+                valor: `R$ ${valorSelecionado}`,
+                id_jogador: idJogador
+            };
+
+            tg.sendData(JSON.stringify(dadosPedido));
+            tg.close();
+        }
+    </script>
 </body>
-</html>
+    </html>
