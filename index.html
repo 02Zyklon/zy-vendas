@@ -1,0 +1,176 @@
+!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zyklon Vendas</title>
+    <!-- SDK Oficial do Telegram Mini Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Estilização Brutalista / Dark se adaptando ao tema do Telegram */
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: var(--tg-theme-bg-color, #1a1a1a);
+            color: var(--tg-theme-text-color, #ffffff);
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h2 {
+            text-align: center;
+            color: #ff3333;
+            text-transform: uppercase;
+            border-bottom: 2px solid #ff3333;
+            padding-bottom: 8px;
+        }
+        .produto-card {
+            background-color: var(--tg-theme-secondary-bg-color, #2d2d2d);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #ff3333;
+        }
+        .produto-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .produto-info p {
+            margin: 0;
+            color: #ff3333;
+            font-weight: bold;
+        }
+        .btn-selecionar {
+            background-color: #ff3333;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-selecionar.ativo {
+            background-color: #33cc33;
+        }
+        .campo-id {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .campo-id input {
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background-color: #222;
+            color: white;
+            font-size: 16px;
+        }
+        .btn-pago {
+            width: 100%;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Zyklon Vendas - FF</h2>
+    
+    <!-- Lista de Itens -->
+    <div id="vitrine">
+        <div class="produto-card">
+            <div class="produto-info">
+                <h3>Passe Booyah</h3>
+                <p>R$ 6,00</p>
+            </div>
+            <button class="btn-selecionar" onclick="selecionarProduto(this, 'Passe Booyah', 6.00)">Selecionar</button>
+        </div>
+
+        <div class="produto-card">
+            <div class="produto-info">
+                <h3>1040 Dimas (Via Token)</h3>
+                <p>R$ 33,00</p>
+            </div>
+            <button class="btn-selecionar" onclick="selecionarProduto(this, '1040 Dimas', 33.00)">Selecionar</button>
+        </div>
+        
+        <div class="produto-card">
+            <div class="produto-info">
+                <h3>Punho Infinito</h3>
+                <p>R$ 125,00</p>
+            </div>
+            <button class="btn-selecionar" onclick="selecionarProduto(this, 'Punho Infinito', 125.00)">Selecionar</button>
+        </div>
+    </div>
+
+    <!-- Campo de ID do Player -->
+    <div class="campo-id">
+        <label for="player-id">ID do Free Fire:</label>
+        <input type="number" id="player-id" placeholder="Digite o ID do jogo...">
+    </div>
+
+    <!-- Botão de Ação Principal -->
+    <button class="btn-pago" onclick="enviarPedido()">Confirmar Pedido</button>
+</div>
+
+<script>
+    // Inicializa o SDK do Telegram
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Abre o Mini App em tela cheia automaticamente
+
+    let produtoSelecionado = null;
+
+    function selecionarProduto(botao, nome, preco) {
+        // Reseta os outros botões
+        document.querySelectorAll('.btn-selecionar').forEach(btn => {
+            btn.classList.remove('ativo');
+            btn.innerText = 'Selecionar';
+        });
+
+        // Ativa o botão clicado
+        botao.classList.add('ativo');
+        botao.innerText = 'Selecionado ✓';
+        
+        produtoSelecionado = { nome, preco };
+    }
+
+    function enviarPedido() {
+        const idPlayer = document.getElementById('player-id').value;
+
+        if (!produtoSelecionado) {
+            alert("Por favor, selecione um produto!");
+            return;
+        }
+        if (!idPlayer) {
+            alert("Por favor, digite o seu ID do Free Fire!");
+            return;
+        }
+
+        // Monta os dados do pedido
+        const dadosPedido = {
+            item: produtoSelecionado.nome,
+            valor: produtoSelecionado.preco,
+            id: idPlayer
+        };
+
+        // Envia os dados de volta para o chat do bot no Telegram
+        tg.sendData(JSON.stringify(dadosPedido));
+        tg.close(); // Fecha o Mini App após enviar
+    }
+</script>
+</body>
+</html>
